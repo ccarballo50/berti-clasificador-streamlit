@@ -1,9 +1,9 @@
-
 import streamlit as st
 from enriquecedor_clinico import enriquecer_anamnesis, score_tipicidad, clasificacion_angina
 
 st.set_page_config(page_title="Clasificación de Angina - BERTI SEC", layout="centered")
 st.title("🩺 Clasificación clínica de angina según la SEC")
+
 st.markdown("""
 Esta app utiliza lógica clínica programable para analizar anamnesis y clasificar el tipo de angina según los criterios de la Sociedad Española de Cardiología (SEC).
 """)
@@ -24,6 +24,11 @@ if st.button("Analizar anamnesis"):
         st.markdown(f"**Clasificación SEC:** `Angina {tipo.upper()}`")
 
         st.markdown("---")
-        st.subheader("🧠 Variables clínicas detectadas")
+        st.subheader("🧠 Variables clínicas detectadas (valores extraídos)")
         for var, val in resumen.items():
             st.markdown(f"- **{var}**: `{val}`")
+
+        st.markdown("---")
+        st.markdown("### 🧪 Debug del resumen (valores completos capturados)")
+        st.code(resumen, language='json')
+
