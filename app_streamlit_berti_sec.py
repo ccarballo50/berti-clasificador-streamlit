@@ -27,6 +27,10 @@ if st.button("Analizar anamnesis"):
         st.subheader("🧠 Variables clínicas detectadas (valores extraídos)")
         for var, val in resumen.items():
             st.markdown(f"- **{var}**: `{val}`")
+        st.markdown("---")
+        st.markdown("### 🧪 Debug del resumen (valores completos capturados)")
+        st.code(resumen, language='json')
+
 import pandas as pd
 import os
 
@@ -55,8 +59,3 @@ if st.button("Guardar este caso en Excel"):
 
     df_final.to_excel(nombre_archivo, index=False)
     st.success(f"Caso guardado en '{nombre_archivo}'")
-
-        st.markdown("---")
-        st.markdown("### 🧪 Debug del resumen (valores completos capturados)")
-        st.code(resumen, language='json')
-
