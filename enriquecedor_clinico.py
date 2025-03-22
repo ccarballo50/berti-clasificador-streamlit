@@ -21,6 +21,7 @@ def enriquecer_anamnesis(texto):
 
     resumen = {}
 
+
     for var, patrones in variables.items():
         detectado = "no mencionado"
         for patron in patrones.get("ausente", []):
@@ -36,7 +37,7 @@ def enriquecer_anamnesis(texto):
 
     etiquetas = " ".join([f"[{k}: {v}]" for k, v in resumen.items()])
     texto_enriquecido = texto.strip() + " " + etiquetas
-    return texto_enriquecido
+    return texto_enriquecido, resumen
 
 # ✅ Ejemplo:
 if __name__ == "__main__":
