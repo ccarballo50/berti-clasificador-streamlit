@@ -1,6 +1,6 @@
 
 import streamlit as st
-from enriquecedor_clinico_extendido import enriquecer_anamnesis, score_tipicidad, clasificacion_angina
+from enriquecedor_clinico import enriquecer_anamnesis, score_tipicidad, clasificacion_angina
 
 st.set_page_config(page_title="Clasificación de Angina - BERTI SEC", layout="centered")
 st.title("🩺 Clasificación clínica de angina según la SEC")
