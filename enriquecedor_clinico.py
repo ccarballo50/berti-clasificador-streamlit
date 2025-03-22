@@ -43,3 +43,30 @@ if __name__ == "__main__":
     ejemplo = "Paciente con dolor retroesternal irradiado a brazo izquierdo, con disnea y sudoración profusa, sin vómitos."
     print("Texto enriquecido:")
     print(enriquecer_anamnesis(ejemplo))
+
+def score_tipicidad(resumen):
+    pesos = {
+        "dolor_opresivo": 2,
+        "irradiacion": 2,
+        "relacion_esfuerzo": 1.5,
+        "alivio_nitratos": 1.5,
+        "disnea": 1,
+        "sudoracion": 1,
+        "reproducible_palpacion": -2,
+        "relacion_respiracion": -2,
+        "duracion_inusual": -1
+    }
+    score = 0
+    for var, peso in pesos.items():
+        if resumen.get(var) == "presente":
+            score += peso
+    return score
+    
+def clasificacion_angina(score):
+    if score >= 6:
+        return "tipica"
+    elif score >= 3:
+        return "atipica"
+    else:
+        return "no anginosa"
+
