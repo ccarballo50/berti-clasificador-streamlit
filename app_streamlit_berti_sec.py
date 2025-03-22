@@ -27,6 +27,34 @@ if st.button("Analizar anamnesis"):
         st.subheader("🧠 Variables clínicas detectadas (valores extraídos)")
         for var, val in resumen.items():
             st.markdown(f"- **{var}**: `{val}`")
+import pandas as pd
+import os
+
+st.markdown("---")
+st.subheader("💾 Guardar resultado para análisis posterior")
+
+if st.button("Guardar este caso en Excel"):
+    fila = {
+        "anamnesis": texto_input,
+        "texto_enriquecido": enriquecido,
+        "score": score,
+        "clasificacion_sec": tipo
+    }
+    # Añadimos todas las variables del resumen como columnas
+    fila.update(resumen)
+
+    df_nuevo = pd.DataFrame([fila])
+
+    nombre_archivo = "feedback_berti.xlsx"
+
+    if os.path.exists(nombre_archivo):
+        df_existente = pd.read_excel(nombre_archivo)
+        df_final = pd.concat([df_existente, df_nuevo], ignore_index=True)
+    else:
+        df_final = df_nuevo
+
+    df_final.to_excel(nombre_archivo, index=False)
+    st.success(f"Caso guardado en '{nombre_archivo}'")
 
         st.markdown("---")
         st.markdown("### 🧪 Debug del resumen (valores completos capturados)")
