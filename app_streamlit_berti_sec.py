@@ -5,56 +5,82 @@ import base64
 from enriquecedor_clinico import enriquecer_anamnesis, score_tipicidad, clasificacion_angina
 
 
-# Inicializar sesión si no existe
-if 'respuestas_clinicas' not in st.session_state:
-    st.session_state.respuestas_clinicas = {}
-
-# Encabezado
+st.set_page_config(page_title="Clasificador BERTI", layout="centered")
 st.title("🩺 Clasificación clínica asistida - BERTI")
-st.markdown("""
-#### Para la clasificación de riesgo de este paciente, se considera que las enzimas han sido normales, y que no hay alteración electrocardiográfica sugerente de isquemia aguda.
-""")
 
-# Preguntas dinámicas según variables no detectadas en la anamnesis
-variables_clinicas = {
-    "tipo_dolor": "¿Cuál es el tipo de dolor (opresivo, ardor, punzante...)?",
-    "disnea": "¿Presenta disnea o dificultad respiratoria?",
-    "cortejo_vegetativo": "¿Cortejo vegetativo? (náuseas, vómitos o sudoración)",
-    "palpitaciones": "¿Ha presentado palpitaciones?",
-    "irradiacion": "¿El dolor irradia a alguna zona (brazo, mandíbula...)?",
-    "duracion": "¿Cuál fue la duración del episodio (minutos, horas, segundos)?",
-    "similitud_dolor_previo_isquemico": "¿Se parece a algún dolor previo como un IAM o problema cardíaco anterior?",
-    "factores_riesgo": "¿Presenta factores de riesgo cardiovascular relevantes? (HTA, DM, dislipemia, tabaquismo, obesidad, antecedentes familiares)",
-    "edad": "¿Cuál es la edad del paciente?"
-}
+st.markdown(
+    """
+    Para la clasificación de riesgo de este paciente, se considera que las enzimas han sido normales, y que no hay alteración electrocardiográfica sugerente de isquemia aguda.
+    """
+)
 
-respuestas_actuales = st.session_state.respuestas_clinicas
+texto_input = st.text_area("Introduce la anamnesis clínica:")
+if 'casos_acumulados' not in st.session_state:
+    st.session_state.casos_acumulados = []
 
-st.markdown("## ❓ Preguntas asistidas por BERTI para completar diagnóstico")
+if st.button("🔍 Analizar anamnesis"):
+    if texto_input:
+        enriquecido, resumen = enriquecer_anamnesis(texto_input)
+        score = score_tipicidad(resumen)
+        clasificacion = clasificacion_angina(score)
 
-with st.form("formulario_clinico"):
-    for var, pregunta in variables_clinicas.items():
-        if var not in respuestas_actuales or respuestas_actuales[var] == "No contestado":
-            respuestas_actuales[var] = st.radio(
-                f"{pregunta}",
-                ["No contestado", "Sí", "No", "No lo sabe"],
-                index=0,
-                key=f"respuesta_{var}"
-            )
+        st.markdown("## ✅ Resultado del análisis clínico")
+        st.markdown("**Texto enriquecido:**")
+        st.code(enriquecido)
+        st.markdown(f"**Score de tipicidad clínica:** {score}")
+        st.markdown(f"**Clasificación SEC:** {clasificacion.upper()}")
 
-    submitted = st.form_submit_button("📊 Resultado BERTI completo")
+        st.markdown("## 🧠 Variables clínicas detectadas")
+        for var, valor in resumen.items():
+            st.markdown(f"- **{var}**: {valor}")
 
-if submitted:
-    st.markdown("---")
-    st.subheader("🧠 Resumen clínico final")
-    for var, respuesta in respuestas_actuales.items():
-        st.write(f"**{variables_clinicas.get(var, var)}:** {respuesta}")
+        # Preguntas asistidas si faltan variables importantes
+        st.markdown("## ❓ Preguntas asistidas por BERTI para completar diagnóstico")
+        st.info("Para emitir un diagnóstico más preciso, BERTI sugiere preguntar al médico clínico:")
 
-# Exportar resultados a Excel
+        preguntas = {
+            "tipo_dolor": "¿Cuál es el tipo de dolor (opresivo, ardor, punzante...)?",
+            "localizacion_dolor": "¿Dónde se localiza el dolor (pecho, precordial, epigastrio...)?",
+            "similitud_dolor_previo_isquemico": "¿Se parece a algún dolor previo como un IAM o problema cardíaco anterior?",
+            "disnea": "¿Presenta disnea o dificultad respiratoria?",
+            "sudoracion": "¿Hubo cortejo vegetativo (náuseas, vómitos o sudoración)?",
+            "duracion": "¿Cuál fue la duración del episodio (minutos, horas, segundos)?",
+            "factores_riesgo": "¿Presenta factores de riesgo cardiovascular relevantes? (HTA, DM, dislipemia, tabaquismo, CI previa)"
+        }
+
+        respuestas = {}
+        for var, pregunta in preguntas.items():
+            if resumen.get(var) == "no mencionado":
+                respuestas[var] = st.radio(pregunta, ["No contestado", "Sí", "No", "No lo sabe"], key=var)
+
+        # Botón final para mostrar la conclusión
+        if st.button("💡 Mostrar clasificación final BERTI"):
+            st.markdown("### 🧾 Conclusiones clínicas finales")
+            st.markdown(f"**Clasificación SEC (texto + preguntas):** {clasificacion.upper()}")
+            st.markdown(f"**Score tipicidad ajustado:** {score}")
+            for var, resp in respuestas.items():
+                st.markdown(f"- **{var}**: {resp}")
+
+        # Acumular caso para exportación
+        caso = {
+            "anamnesis": texto_input,
+            "texto_enriquecido": enriquecido,
+            "score": score,
+            "clasificacion_sec": clasificacion,
+        }
+        caso.update(resumen)
+        st.session_state.casos_acumulados.append(caso)
+
+# Exportar casos acumulados
 st.markdown("---")
-st.subheader("📥 Exportación de resultados")
-if st.button("📤 Exportar todos los casos a Excel"):
-    df = pd.DataFrame.from_dict(respuestas_actuales, orient='index', columns=['Respuesta'])
-    df.to_excel("output_feedback_clinico.xlsx")
-    st.success("Archivo 'output_feedback_clinico.xlsx' exportado correctamente.")
+st.markdown("## 📊 Casos acumulados en esta sesión")
+if len(st.session_state.casos_acumulados) > 0:
+    df_export = pd.DataFrame(st.session_state.casos_acumulados)
+    st.dataframe(df_export)
+    nombre_archivo = "berticasos_exportados.xlsx"
+    df_export.to_excel(nombre_archivo, index=False)
+    with open(nombre_archivo, "rb") as f:
+        st.download_button("⬇️ Exportar todos los casos a Excel", f, file_name=nombre_archivo)
+else:
+    st.info("Aún no hay casos acumulados. Analiza primero una anamnesis.")
 
