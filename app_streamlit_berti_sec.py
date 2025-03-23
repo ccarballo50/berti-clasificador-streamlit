@@ -5,46 +5,49 @@ import base64
 from enriquecedor_clinico import enriquecer_anamnesis, score_tipicidad, clasificacion_angina
 
 
-st.set_page_config(page_title="Clasificador clínico BERTI", layout="centered")
+st.set_page_config(page_title="BERTI - Clasificador clínico", layout="wide")
 st.title("🩺 Clasificación clínica asistida - BERTI")
 
-# Mensaje informativo
 st.markdown("""
-Para la clasificación de riesgo de este paciente, se considera que las enzimas han sido normales,
-y que no hay alteración electrocardiográfica sugerente de isquemia aguda.
+Para la clasificación de riesgo de este paciente, se considera que las enzimas han sido normales, y que no hay alteración electrocardiográfica sugerente de isquemia aguda.
 """)
 
-# Campo para introducir texto libre
-texto_input = st.text_area("Introduce aquí la anamnesis clínica del paciente:")
+if "casos_acumulados" not in st.session_state:
+    st.session_state["casos_acumulados"] = []
+if "respuestas_berti" not in st.session_state:
+    st.session_state["respuestas_berti"] = {}
 
-if 'respuestas_bert' not in st.session_state:
-    st.session_state.respuestas_bert = {}
-if 'casos_guardados' not in st.session_state:
-    st.session_state.casos_guardados = []
-
+texto_input = st.text_area("Introduce la anamnesis clínica:")
 if st.button("🔍 Analizar anamnesis"):
-    if texto_input:
-        enriquecido, resumen = enriquecer_anamnesis(texto_input)
-        score = score_tipicidad(resumen)
-        clasificacion_sec = clasificacion_angina(score)
+    enriquecido, resumen = enriquecer_anamnesis(texto_input)
+    score = score_tipicidad(resumen)
+    clasif_sec = clasificacion_angina(score)
 
-        st.session_state.texto_input = texto_input
-        st.session_state.enriquecido = enriquecido
-        st.session_state.resumen = resumen
-        st.session_state.score = score
-        st.session_state.clasificacion_sec = clasificacion_sec
+    st.subheader("✅ Resultado del análisis clínico")
+    st.markdown(f"**Texto enriquecido:**\n
+{enriquecido}")
+    st.markdown(f"**Score de tipicidad clínica:** {score}")
+    st.markdown(f"**Clasificación SEC:** `{clasif_sec.upper()}`")
 
-        st.markdown("---")
-        st.markdown("### ✅ Resultado del análisis clínico")
-        st.markdown(f"**Texto enriquecido:**\n\n{enriquecido}")
-        st.markdown(f"**Score de tipicidad clínica:** {score}")
-        st.markdown(f"**Clasificación SEC:** {clasificacion_sec.upper()}")
+    st.subheader("🧠 Variables clínicas detectadas")
+    for var, val in resumen.items():
+        st.markdown(f"- **{var}**: `{val}`")
 
-        # Preguntas asistidas si faltan variables
-        st.markdown("---")
-        st.markdown("### ❓ Preguntas asistidas por BERTI para completar diagnóstico")
+    caso = {
+        "anamnesis": texto_input,
+        "texto_enriquecido": enriquecido,
+        "clasificacion_SEC": clasif_sec
+    }
+    st.session_state.casos_acumulados.append(caso)
 
-        preguntas_diccionario = {
+# Mostrar preguntas asistidas después del análisis completo
+if st.session_state.get("casos_acumulados"):
+    st.markdown("""
+---
+## ❓ Preguntas asistidas por BERTI para completar diagnóstico
+""")
+    resumen_actual = enriquecer_anamnesis(texto_input)[1] if texto_input else {}
+    preguntas = {
             "tipo_dolor": "¿Cuál es el tipo de dolor (opresivo, ardor, punzante...)?",
             "localizacion_dolor": "¿Dónde se localiza el dolor (torácico, retroesternal, precordial...)?",
             "similitud_dolor_previo_isquemico": "¿Se parece a algún dolor previo como un IAM o problema cardíaco anterior?",
@@ -57,45 +60,25 @@ if st.button("🔍 Analizar anamnesis"):
             "duracion": "¿Cuál fue la duración del episodio (minutos, horas, segundos)?",
             "factores_riesgo": "¿Presenta factores de riesgo cardiovascular relevantes (HTA, DM, dislipemia, tabaquismo)?"
         }
+    respuestas_berti = st.session_state.respuestas_berti
 
-        for variable, pregunta in preguntas_diccionario.items():
-            if resumen.get(variable) in ["no mencionado", None]:
-                st.session_state.respuestas_bert.setdefault(variable, "No contestado")
-                st.session_state.respuestas_bert[variable] = st.radio(
-                    pregunta,
-                    options=["No contestado", "Sí", "No", "No lo sabe"],
-                    index=["No contestado", "Sí", "No", "No lo sabe"].index(
-                        st.session_state.respuestas_bert.get(variable, "No contestado")
-                    ),
-                    key=f"radio_{variable}"
-                )
+    with st.form("formulario_berti"):
+        for var, pregunta in preguntas.items():
+            if resumen_actual.get(var) in [None, "no mencionado"]:
+                respuesta = st.radio(pregunta, ["No contestado", "Sí", "No", "No lo sabe"], key=var)
+                respuestas_berti[var] = respuesta
+        submit = st.form_submit_button("✅ Resultado BERTI")
 
-        if st.button("✅ Ver resultado BERTI"):
-            st.markdown("---")
-            st.markdown("### 📌 Resultado final clínico")
-            st.markdown(f"**Clasificación SEC (NLP):** {st.session_state.clasificacion_sec.upper()}")
-            st.markdown(f"**Score clínico:** {st.session_state.score}")
-            st.markdown("**Factores adicionales aportados por el médico:**")
-            for var, resp in st.session_state.respuestas_bert.items():
-                st.markdown(f"- {var.replace('_',' ').capitalize()}: {resp}")
+    if submit:
+        st.markdown("---")
+        st.subheader("📊 Resumen de respuestas asistidas")
+        for k, v in respuestas_berti.items():
+            st.markdown(f"- **{k}**: `{v}`")
 
-            st.session_state.casos_guardados.append({
-                "anamnesis": st.session_state.texto_input,
-                "enriquecido": st.session_state.enriquecido,
-                "clasificacion_SEC": st.session_state.clasificacion_sec,
-                **st.session_state.respuestas_bert
-            })
-            st.success("✅ Caso guardado correctamente en la sesión.")
+        st.success("Resultado BERTI generado correctamente. Puedes exportar los casos acumulados.")
 
-st.markdown("---")
-st.markdown("### 📊 Casos acumulados en esta sesión")
-if st.session_state.casos_guardados:
-    df_casos = pd.DataFrame(st.session_state.casos_guardados)
-    st.dataframe(df_casos)
-    if st.button("💾 Exportar todos los casos a Excel"):
-        df_casos.to_excel("casos_bert_sesion.xlsx", index=False)
-        st.success("Archivo exportado correctamente: casos_bert_sesion.xlsx")
-else:
-    st.info("Aún no hay casos acumulados. Analiza primero una anamnesis.")
-
+        if st.button("📤 Exportar todos los casos a Excel"):
+            df = pd.DataFrame(st.session_state.casos_acumulados)
+            df.to_excel("output_berti_excel.xlsx", index=False)
+            st.success("Archivo 'output_berti_excel.xlsx' exportado correctamente")
 
