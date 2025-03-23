@@ -12,14 +12,14 @@ Esta app analiza anamnesis clínicas, calcula el score de tipicidad y clasificac
 y además te permite acumular múltiples casos en sesión y exportarlos todos a Excel al final.
 """)
 
-# Inicializar lista acumulativa en sesión
+# Inicializar lista acumulativa
 if "casos_acumulados" not in st.session_state:
     st.session_state.casos_acumulados = []
 
-# Entrada libre del texto clínico
+# Entrada del texto clínico
 texto_input = st.text_area("Introduce la anamnesis clínica del paciente:", height=200)
 
-if st.button("🔍 Analizar anamnesis"):
+if st.button("🔍 Analizar y guardar este caso"):
     if texto_input.strip() == "":
         st.warning("Por favor, introduce una anamnesis.")
     else:
@@ -32,28 +32,22 @@ if st.button("🔍 Analizar anamnesis"):
         st.markdown(f"**Score de tipicidad clínica:** `{score}`")
         st.markdown(f"**Clasificación SEC:** `Angina {tipo.upper()}`")
 
-        st.markdown("---")
-        st.subheader("🧠 Variables clínicas detectadas (valores extraídos)")
+        st.subheader("🧠 Variables clínicas detectadas")
         for var, val in resumen.items():
             st.markdown(f"- **{var}**: `{val}`")
 
-        st.markdown("---")
-        st.markdown("### 🧪 Debug del resumen (valores completos capturados)")
-        st.code(resumen, language='json')
+        # Guardar directamente el caso en la lista
+        fila = {
+            "anamnesis": texto_input,
+            "texto_enriquecido": enriquecido,
+            "score": score,
+            "clasificacion_sec": tipo
+        }
+        fila.update(resumen)
+        st.session_state.casos_acumulados.append(fila)
+        st.success("✅ Caso guardado correctamente en la sesión.")
 
-        # Botón para acumular este caso
-        if st.button("➕ Guardar este caso en la sesión acumulativa"):
-            fila = {
-                "anamnesis": texto_input,
-                "texto_enriquecido": enriquecido,
-                "score": score,
-                "clasificacion_sec": tipo
-            }
-            fila.update(resumen)
-            st.session_state.casos_acumulados.append(fila)
-            st.success("✅ Caso guardado en la lista acumulada.")
-
-# Mostrar los casos acumulados en sesión
+# Mostrar todos los casos acumulados
 st.markdown("---")
 st.subheader("📊 Casos acumulados en esta sesión")
 
@@ -61,8 +55,7 @@ if len(st.session_state.casos_acumulados) > 0:
     df = pd.DataFrame(st.session_state.casos_acumulados)
     st.dataframe(df)
 
-    # Botón para exportar todos los casos acumulados
-    if st.button("📥 Exportar Excel de todos los casos analizados"):
+    if st.button("📥 Exportar Excel de todos los casos acumulados"):
         nombre_archivo = "feedback_berti_acumulado.xlsx"
         df.to_excel(nombre_archivo, index=False, engine='openpyxl')
 
