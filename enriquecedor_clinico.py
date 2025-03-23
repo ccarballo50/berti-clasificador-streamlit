@@ -79,7 +79,7 @@ variables = {
     ],
     "ausente": []
 }
-
+}
 def enriquecer_anamnesis(texto):
     resumen = {}
     texto_enriquecido = texto
