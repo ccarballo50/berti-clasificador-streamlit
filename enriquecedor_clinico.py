@@ -1,4 +1,5 @@
 import re
+from enriquecedor_clinico import enriquecer_anamnesis
 
 variables = {
 "tipo_dolor": {
