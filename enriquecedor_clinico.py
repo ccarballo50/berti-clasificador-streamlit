@@ -1,6 +1,5 @@
 import re
 
-# Diccionario clínico con valores normalizados integrados
 variables = {
     "tipo_dolor": {
         "presente": [
@@ -71,37 +70,29 @@ variables = {
     },
     "duracion": {
         "presente": [
-            {"regex": r"(\\d+\\s*(min|minutos|h|horas))", "valor": "duracion_detectada"}
+            {"regex": r"(\d+\s*(min|minutos|h|horas))", "valor": "duracion_detectada"}
         ],
         "ausente": []
     }
 }
 
-# Función principal adaptada
 def enriquecer_anamnesis(texto):
     resumen = {}
     texto_enriquecido = texto
 
     for variable, patrones in variables.items():
-        valor_encontrado = None
-
-        # Buscar primero en los patrones 'presente'
+        valor_detectado = None
         for patron in patrones["presente"]:
-            regex = re.compile(patron["regex"], re.IGNORECASE)
-            match = regex.search(texto)
-            if match:
-                valor_encontrado = patron["valor"]
-                resumen[variable] = valor_encontrado
-                texto_enriquecido += f" [{variable}: {valor_encontrado}]"
+            if re.search(patron["regex"], texto, flags=re.IGNORECASE):
+                valor_detectado = patron["valor"]
+                resumen[variable] = valor_detectado
+                texto_enriquecido += f" [{variable}: {valor_detectado}]"
                 break
-
-        # Si no se detecta ningún patrón, marcar como "no mencionado"
-        if not valor_encontrado:
+        if not valor_detectado:
             resumen[variable] = "no mencionado"
 
     return texto_enriquecido, resumen
 
-# Opcionales: Score y clasificación SEC
 def score_tipicidad(resumen):
     pesos = {
         "tipo_dolor": 2,
