@@ -88,6 +88,8 @@ if st.session_state.get("casos_acumulados"):
         # Crear dataframe a partir de los casos acumulados
         df_acumulado = pd.DataFrame(st.session_state.casos_acumulados)
         df_acumulado.to_excel(ruta_excel, index=False)
+        st.write("Vista previa del archivo guardado:")
+        st.dataframe(df_acumulado)
 
         st.success(f"✅ Casos acumulados guardados correctamente en `{nombre_excel}`")
 
