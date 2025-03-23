@@ -85,12 +85,17 @@ def enriquecer_anamnesis(texto):
 
     for variable, patrones in variables.items():
         valor_detectado = None
+
         for patron in patrones["presente"]:
-            if re.search(patron["regex"], texto, flags=re.IGNORECASE):
-                valor_detectado = patron["valor"]
+            patron_regex = patron.get("regex", "")
+            valor = patron.get("valor", "")
+
+            if re.search(patron_regex, texto, flags=re.IGNORECASE):
+                valor_detectado = valor
                 resumen[variable] = valor_detectado
                 texto_enriquecido += f" [{variable}: {valor_detectado}]"
                 break
+
         if not valor_detectado:
             resumen[variable] = "no mencionado"
 
@@ -122,8 +127,6 @@ def clasificacion_angina(score):
         return "atipica"
     else:
         return "no anginosa"
-
-
 # Ejemplo
 if __name__ == "__main__":
     ejemplo = "Paciente con dolor opresivo retroesternal que cede con el reposo, similar a infarto previo, de inicio súbito. Asocia disnea y sudoración."
