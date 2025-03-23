@@ -1,9 +1,6 @@
-
 import re
 
-def enriquecer_anamnesis(texto):
-    texto = texto.lower()
-
+# Diccionario clínico con valores normalizados integrados
 variables = {
     "tipo_dolor": {
         "presente": [
@@ -15,7 +12,7 @@ variables = {
     "localizacion_dolor": {
         "presente": [
             {"regex": r"(precordial)", "valor": "precordial"},
-            {"regex": r"(tor[áa]cico|t[oó]rax|pecho|zona tor[áa]cica|regi[oó]n tor[áa]cica|zona tor[áa]cica)", "valor": "torácico"}
+            {"regex": r"(tor[áa]cico|t[oó]rax|pecho|zona tor[áa]cica|regi[oó]n tor[áa]cica)", "valor": "torácico"}
         ],
         "ausente": []
     },
@@ -80,39 +77,48 @@ variables = {
     }
 }
 
-
-
+# Función principal adaptada
+def enriquecer_anamnesis(texto):
     resumen = {}
+    texto_enriquecido = texto
 
-    for var, patrones in variables.items():
-        valor_detectado = "no mencionado"
-        for patron in patrones.get("valores", []):
-            match = re.search(patron, texto)
-            if match and match.lastindex:
-                valor_detectado = match.group(1)
+    for variable, patrones in variables.items():
+        valor_encontrado = None
+
+        # Buscar primero en los patrones 'presente'
+        for patron in patrones["presente"]:
+            regex = re.compile(patron["regex"], re.IGNORECASE)
+            match = regex.search(texto)
+            if match:
+                valor_encontrado = patron["valor"]
+                resumen[variable] = valor_encontrado
+                texto_enriquecido += f" [{variable}: {valor_encontrado}]"
                 break
-        resumen[var] = valor_detectado
 
-    etiquetas = " ".join([f"[{k}: {v}]" for k, v in resumen.items()])
-    texto_enriquecido = texto.strip() + " " + etiquetas
+        # Si no se detecta ningún patrón, marcar como "no mencionado"
+        if not valor_encontrado:
+            resumen[variable] = "no mencionado"
+
     return texto_enriquecido, resumen
 
+# Opcionales: Score y clasificación SEC
 def score_tipicidad(resumen):
     pesos = {
-        "tipo_dolor": {"opresivo": 2},
-        "irradiacion": {"irradiado": 2},
-        "alivio_con_reposo": {"cede": 1.5, "mejora": 1.5, "desaparece": 1.5},
-        "disnea": {"disnea": 1},
-        "sudoracion": {"sudoracion": 1, "sudoroso": 1},
-        "duracion": {">20 min": -1},
-        "similitud_dolor_previo_isquemico": {"similar": 1, "recuerda": 1, "comparable": 1},
-        "inicio_dolor": {"súbito": 1, "brusco": 1}
+        "tipo_dolor": 2,
+        "irradiacion": 2,
+        "alivio_con_reposo": 1.5,
+        "similitud_dolor_previo_isquemico": 1.5,
+        "disnea": 1,
+        "sudoracion": 1,
+        "inicio_dolor": 0.5,
+        "duracion": 1,
+        "palpitaciones": 0.5,
+        "vomitos": 0.5
     }
     score = 0
-    for var, valores in pesos.items():
-        val_detectado = resumen.get(var, "")
-        if val_detectado in valores:
-            score += valores[val_detectado]
+    for var, peso in pesos.items():
+        if resumen.get(var) not in ["no mencionado", None]:
+            score += peso
     return score
 
 def clasificacion_angina(score):
@@ -122,6 +128,7 @@ def clasificacion_angina(score):
         return "atipica"
     else:
         return "no anginosa"
+
 
 # Ejemplo
 if __name__ == "__main__":
