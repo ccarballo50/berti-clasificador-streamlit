@@ -89,7 +89,9 @@ variables = {
 },
 "duracion": {
     "presente": [
-        {"regex": r"(\\d+\\s*(min|minutos|h|horas))", "valor": "duracion_detectada"}
+        r"(duraci[oó]n\s*(aprox\.?|aproximada)?\s*(de\s*)?(>|<)?\s*\d+\s*(minutos|min|min\.|h|horas)?)",
+        r"(aprox\.?|aproximadamente|alrededor de|unos|más de|menos de)\s*\d+\s*(minutos|min|min\.|h|horas)",
+        r"\d+\s*(minutos|min|min\.|h|horas)\s*(de duración)?"
     ],
     "ausente": []
 }
