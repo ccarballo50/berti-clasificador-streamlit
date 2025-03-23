@@ -24,8 +24,7 @@ if st.button("🔍 Analizar anamnesis"):
     clasif_sec = clasificacion_angina(score)
 
     st.subheader("✅ Resultado del análisis clínico")
-    st.markdown(f"**Texto enriquecido:**\n
-{enriquecido}")
+    st.markdown(f"**Texto enriquecido:**\n{enriquecido}")
     st.markdown(f"**Score de tipicidad clínica:** {score}")
     st.markdown(f"**Clasificación SEC:** `{clasif_sec.upper()}`")
 
