@@ -30,8 +30,20 @@ variables = {
 "similitud_dolor_previo_isquemico": {
     "presente": [
         {"regex": r"(similar|parecido|idéntico|comparable|igual|mismo).*?(infarto|IAM|isquemia|dolor anterior|episodio previo|evento previo)", "valor": "similar a isquémico previo"},
-        {"regex": r"(recuerda|me recuerda|reminiscente|ya conocido|reconocido|evoca).*?(infarto|IAM|isquemia|dolor anterior|dolor cardiaco)", "valor": "similar a isquémico previo"},
-        {"regex": r"(dolor).*(ya ha tenido|tuvo previamente|sufrió antes|conocido previamente|cardiaco previo)", "valor": "similar a isquémico previo"}
+        {"regex": r"(recuerda|me recuerda|reminiscente|ya conocido|reconocido|evoca|me suena|ya vivido).*?(infarto|IAM|isquemia|dolor anterior|dolor cardiaco)", "valor": "similar a isquémico previo"},
+        {"regex": r"(dolor|molestia).*?(ya ha tenido|tuvo previamente|sufrió antes|conocido previamente|cardiaco previo|dolor antiguo)", "valor": "similar a isquémico previo"},
+        {"regex": r"(como el anterior|igual que el anterior|como el que tuvo antes|mismo del ingreso anterior)", "valor": "similar a isquémico previo"},
+        {"regex": r"(dolor conocido|dolor ya conocido|dolor reconocido)", "valor": "similar a isquémico previo"},
+        {"regex": r"(episodio similar al de).*?(IAM|infarto|evento previo)", "valor": "similar a isquémico previo"},
+        {"regex": r"(mismo dolor del ingreso anterior|dolor igual al del ingreso previo)", "valor": "similar a isquémico previo"},
+        {"regex": r"(sensación conocida|sensación ya vivida)", "valor": "similar a isquémico previo"},
+        {"regex": r"(dolor evocador del evento previo|dolor evocador del IAM anterior)", "valor": "similar a isquémico previo"},
+        {"regex": r"(como en el episodio isquémico anterior)", "valor": "similar a isquémico previo"},
+        {"regex": r"(mismo que el del infarto anterior)", "valor": "similar a isquémico previo"},
+        {"regex": r"(me recuerda al dolor del infarto|me recuerda al ingreso previo)", "valor": "similar a isquémico previo"},
+        {"regex": r"(dolor como el que tuvo cuando fue ingresado)", "valor": "similar a isquémico previo"},
+        {"regex": r"(dolor ya vivido, igual que el de antes)", "valor": "similar a isquémico previo"},
+        {"regex": r"(dolor previamente descrito por el paciente como similar al del infarto)", "valor": "similar a isquémico previo"}
     ],
     "ausente": []
 },
