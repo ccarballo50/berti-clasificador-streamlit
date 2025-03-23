@@ -29,10 +29,12 @@ variables = {
 },
 "similitud_dolor_previo_isquemico": {
     "presente": [
-        {"regex": r"(similar|parecido|comparable|recordando|recuerda|ya conocido).*?(infarto|IAM|isquemia|dolor previo|dolor anterior|problema cardiaco)", "valor": "similar a isquémico previo"}
+        {"regex": r"(similar|parecido|idéntico|comparable|igual|mismo).*?(infarto|IAM|isquemia|dolor anterior|episodio previo|evento previo)", "valor": "similar a isquémico previo"},
+        {"regex": r"(recuerda|me recuerda|reminiscente|ya conocido|reconocido|evoca).*?(infarto|IAM|isquemia|dolor anterior|dolor cardiaco)", "valor": "similar a isquémico previo"},
+        {"regex": r"(dolor).*(ya ha tenido|tuvo previamente|sufrió antes|conocido previamente|cardiaco previo)", "valor": "similar a isquémico previo"}
     ],
     "ausente": []
-},
+}
 "inicio_dolor": {
     "presente": [
         {"regex": r"(s[uú]bito|brusco)", "valor": "súbito"},
