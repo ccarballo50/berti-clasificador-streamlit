@@ -4,13 +4,16 @@ variables = {
     "tipo_dolor": {
         "presente": [
             {"regex": r"(quemante|ardor|urente)", "valor": "ardor"},
-            {"regex": r"(opresivo|presivo|pesado|punzante|lancinante|lacerante|molesto|sordo|picante|compresivo)", "valor": "opresivo"}
+            {"regex": r"(opresivo|presivo|pesado|compresivo)", "valor": "opresivo"}
+            {"regex": r"(punzante|lancinante|lacerante)", "valor": "punzante"}
+            {"regex": r"(a )?punta de dedo"|punta dedo)", "valor": "punta dedo"}
+            {"regex": r"(sordo)", "valor": "sordo"}
         ],
         "ausente": []
     },
     "localizacion_dolor": {
         "presente": [
-            {"regex": r"(precordial)", "valor": "precordial"},
+            {"regex": r"(precordial|centrotor[áa]cico|centro del tor[áa]x)", "valor": "precordial"},
             {"regex": r"(tor[áa]cico|t[oó]rax|pecho|zona tor[áa]cica|regi[oó]n tor[áa]cica)", "valor": "torácico"}
         ],
         "ausente": []
