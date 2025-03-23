@@ -17,6 +17,7 @@ variables = {
         {"regex": r"(precordial|centrotor[áa]cico|centro del tor[áa]x)", "valor": "precordial"},
         {"regex": r"(tor[áa]cico|t[oó]rax|pecho|zona tor[áa]cica|regi[oó]n tor[áa]cica)", "valor": "torácico"},
         {"regex": r"(dolor|molestia).*?(tor[áa]cico|pecho|t[oó]rax)", "valor": "torácico"}  # nuevo regex más clínico
+        {"regex": r"(zona|región)?\s?(torácica|del tórax|tórax)", "valor": "torácico"}
     ],
     "ausente": []
 },
@@ -44,6 +45,7 @@ variables = {
         {"regex": r"(dolor típico del paciente|el mismo patrón que episodios anteriores)", "valor": "similar a isquémico previo"},
         {"regex": r"(dolor que coincide con otras veces|que reconoce por experiencias previas)", "valor": "similar a isquémico previo"},
         {"regex": r"(dolor que el paciente relaciona con sus episodios habituales)", "valor": "similar a isquémico previo"}
+        {"regex": r"(dolor).*?(cardiaco).*?(previo|anterior|pasado)", "valor": "similar a isquémico previo"}
     ],
     "ausente": []
 },
