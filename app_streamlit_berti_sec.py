@@ -83,14 +83,15 @@ if st.session_state.get("casos_acumulados"):
 
         # Guardado automático del Excel acumulado
         nombre_excel = "casos_berti_acumulados.xlsx"
-        ruta_excel = os.path.join("/mnt/data", nombre_excel)
+        ruta_excel = nombre_excel  # Corregido: guardamos en la ruta local del proyecto
 
+        # Crear dataframe a partir de los casos acumulados
         df_acumulado = pd.DataFrame(st.session_state.casos_acumulados)
         df_acumulado.to_excel(ruta_excel, index=False)
 
-        st.success(f"✅ Casos acumulados guardados en `{nombre_excel}`")
+        st.success(f"✅ Casos acumulados guardados correctamente en `{nombre_excel}`")
 
-        # Botón de descarga
+        # Botón de descarga directa del Excel
         with open(ruta_excel, "rb") as f:
             st.download_button(
                 label="📥 Descargar Excel acumulado",
@@ -98,3 +99,4 @@ if st.session_state.get("casos_acumulados"):
                 file_name=nombre_excel,
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             )
+
