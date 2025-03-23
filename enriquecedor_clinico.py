@@ -106,17 +106,21 @@ def enriquecer_anamnesis(texto):
         encontrado = False
 
         # Primero buscamos en los patrones "presente"
-        for patron in patrones.get("presente", []):
-            if isinstance(patron, dict):  # Estructura {"regex": ..., "valor": ...}
-                if re.search(patron["regex"], texto, re.IGNORECASE):
-                    valor_detectado = patron["valor"]
-                    encontrado = True
-                    break
-            else:  # Estructura clásica con lista simple de regex
-                if re.search(patron, texto, re.IGNORECASE):
-                    valor_detectado = "presente"
-                    encontrado = True
-                    break
+    for patron in patrones.get("presente", []):
+        if isinstance(patron, dict):  # Estructura {"regex": ..., "valor": ...}
+            match = re.search(patron["regex"], texto, re.IGNORECASE)
+            if match:
+                valor_detectado = patron["valor"] if patron["valor"] is not None else match.group(1)
+                valor_detectado = valor_detectado.strip().lower()
+                encontrado = True
+                break
+        else:  # Estructura clásica con lista simple de regex
+            if re.search(patron, texto, re.IGNORECASE):
+                valor_detectado = "presente"
+                valor_detectado = valor_detectado.strip().lower()
+                encontrado = True
+                break
+
 
         # Solo si no se encontró ningún patrón presente, buscamos en los de "ausente"
         if not encontrado:
