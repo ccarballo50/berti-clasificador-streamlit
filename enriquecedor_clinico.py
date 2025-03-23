@@ -7,72 +7,79 @@ def enriquecer_anamnesis(texto):
 variables = {
     "tipo_dolor": {
         "presente": [
-            r"(?:dolor|molestia).*?(?:opresivo|presivo|pesado|quemante|urente|punzante|molesto|sordo|picante|lancinante|lacerante|compresivo)",
-            r"(?:de tipo|carácter)\s*(?:opresivo|quemante|punzante|urente)"
+            {"regex": r"(quemante|ardor|urente)", "valor": "ardor"},
+            {"regex": r"(opresivo|presivo|pesado|punzante|lancinante|lacerante|molesto|sordo|picante|compresivo)", "valor": "opresivo"}
         ],
         "ausente": []
     },
     "localizacion_dolor": {
         "presente": [
-            r"(zona )?(retrosternal|precordial|epigastrio|costado|tor[áa]cico|t[oó]rax|infraclavicular|subesternal|pecho)",
-            r"(dolor en|molestia en).*?(pecho|torax|regi[oó]n precordial|zona tor[áa]cica|t[oó]rax)"
+            {"regex": r"(precordial)", "valor": "precordial"},
+            {"regex": r"(tor[áa]cico|t[oó]rax|pecho|zona tor[áa]cica|regi[oó]n tor[áa]cica|zona tor[áa]cica)", "valor": "torácico"}
         ],
         "ausente": []
     },
     "alivio_con_reposo": {
         "presente": [
-            r"(cede|mejora|remite|desaparece).*?(reposo|descanso|al cesar la actividad)",
-            r"(mejor[aó]) (al|con).*reposo"
+            {"regex": r"(mejora)", "valor": "mejora"},
+            {"regex": r"(cede|remite|desaparece)", "valor": "cede"}
         ],
         "ausente": []
     },
     "similitud_dolor_previo_isquemico": {
         "presente": [
-            r"(similar|parecido|comparable|recordando).*?(infarto|IAM|isquemia|dolor previo|dolor anterior)",
-            r"(recuerda|ya conocido).*?(dolor isqu[eé]mico|infarto)"
+            {"regex": r"(similar|parecido|comparable|recordando|recuerda|ya conocido).*?(infarto|IAM|isquemia|dolor previo|dolor anterior|problema cardiaco)", "valor": "similar a isquémico previo"}
         ],
         "ausente": []
     },
     "inicio_dolor": {
         "presente": [
-            r"(inicio|comienzo|aparici[oó]n).*(brusco|s[uú]bito|gradual|lento)",
-            r"(dolor).*?(comienza|inicia).*(brusco|s[uú]bito|gradual|poco a poco)"
+            {"regex": r"(s[uú]bito|brusco)", "valor": "súbito"},
+            {"regex": r"(gradual|lento)", "valor": "gradual"}
         ],
         "ausente": []
     },
     "disnea": {
-        "presente": [r"disnea", r"falta.*aire", r"dificultad.*respirar", r"ahogo", r"sensaci[oó]n de asfixia"],
-        "ausente": [r"sin disnea", r"niega disnea", r"no disnea"]
+        "presente": [
+            {"regex": r"(disnea|falta de aire|ahogo|asfixia|dificultad respiratoria|dificultad para respirar|no puede respirar)", "valor": "disnea"}
+        ],
+        "ausente": []
     },
     "sudoracion": {
-        "presente": [r"sudoraci[oó]n", r"sudoroso", r"sudoraci[oó]n profusa", r"sudor fr[ií]o", r"presenta sudoraci[oó]n"],
-        "ausente": [r"sin sudoraci[oó]n", r"niega sudoraci[oó]n"]
+        "presente": [
+            {"regex": r"(sudoraci[oó]n|sudor fr[ií]o|sudoraci[oó]n profusa|empapado en sudor|está sudando)", "valor": "sudoracion"}
+        ],
+        "ausente": []
     },
     "vomitos": {
-        "presente": [r"v[oó]mitos?", r"n[aá]useas?", r"g[aá]strico", r"reflujo"],
-        "ausente": [r"sin v[oó]mitos?", r"niega v[oó]mitos?", r"no n[aá]useas"]
+        "presente": [
+            {"regex": r"(v[oó]mitos?|n[aá]useas?|g[aá]strico|reflujo)", "valor": "vomitos"}
+        ],
+        "ausente": []
     },
     "palpitaciones": {
-        "presente": [r"palpitaciones", r"sensaci[oó]n de latidos", r"latido acelerado"],
-        "ausente": [r"sin palpitaciones", r"niega palpitaciones", r"no palpitaciones"]
+        "presente": [
+            {"regex": r"(palpitaciones|latidos|latido acelerado|sensaci[oó]n de latido)", "valor": "palpitaciones"}
+        ],
+        "ausente": []
     },
     "irradiacion": {
         "presente": [
-            r"irradiado", r"irradiaci[oó]n", 
-            r"(dolor|molestia).*?(brazo|mand[ií]bula|cuello|espalda|hombro)", 
-            r"se extiende a.*?(brazo|mand[ií]bula|cuello|espalda)"
+            {"regex": r"(brazo)", "valor": "brazo"},
+            {"regex": r"(mand[ií]bula)", "valor": "mandíbula"},
+            {"regex": r"(cuello)", "valor": "cuello"},
+            {"regex": r"(espalda|hombro)", "valor": "espalda"}
         ],
-        "ausente": [r"sin irradiaci[oó]n", r"no irradiado", r"niega irradiaci[oó]n"]
+        "ausente": []
     },
     "duracion": {
         "presente": [
-            r"duraci[oó]n.*?(\d+\s*(minutos|min|h|horas))",
-            r"aprox.*?(\d+\s*(min|minutos|horas|h))",
-            r"menos de.*?(10\s*(min|minutos))"
+            {"regex": r"(\\d+\\s*(min|minutos|h|horas))", "valor": "duracion_detectada"}
         ],
         "ausente": []
     }
 }
+
 
 
     resumen = {}
