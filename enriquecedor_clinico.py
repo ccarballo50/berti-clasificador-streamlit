@@ -1,82 +1,82 @@
 import re
 
 variables = {
-    "tipo_dolor": {
-        "presente": [
-            {"regex": r"(quemante|ardor|urente)", "valor": "ardor"},
-            {"regex": r"(opresivo|presivo|pesado|compresivo)", "valor": "opresivo"}
-            {"regex": r"(punzante|lancinante|lacerante)", "valor": "punzante"}
-            {"regex": r"(a )?punta de dedo"|punta dedo)", "valor": "punta dedo"}
-            {"regex": r"(sordo)", "valor": "sordo"}
-        ],
-        "ausente": []
-    },
-    "localizacion_dolor": {
-        "presente": [
-            {"regex": r"(precordial|centrotor[áa]cico|centro del tor[áa]x)", "valor": "precordial"},
-            {"regex": r"(tor[áa]cico|t[oó]rax|pecho|zona tor[áa]cica|regi[oó]n tor[áa]cica)", "valor": "torácico"}
-        ],
-        "ausente": []
-    },
-    "alivio_con_reposo": {
-        "presente": [
-            {"regex": r"(mejora)", "valor": "mejora"},
-            {"regex": r"(cede|remite|desaparece)", "valor": "cede"}
-        ],
-        "ausente": []
-    },
-    "similitud_dolor_previo_isquemico": {
-        "presente": [
-            {"regex": r"(similar|parecido|comparable|recordando|recuerda|ya conocido).*?(infarto|IAM|isquemia|dolor previo|dolor anterior|problema cardiaco)", "valor": "similar a isquémico previo"}
-        ],
-        "ausente": []
-    },
-    "inicio_dolor": {
-        "presente": [
-            {"regex": r"(s[uú]bito|brusco)", "valor": "súbito"},
-            {"regex": r"(gradual|lento)", "valor": "gradual"}
-        ],
-        "ausente": []
-    },
-    "disnea": {
-        "presente": [
-            {"regex": r"(disnea|falta de aire|ahogo|asfixia|dificultad respiratoria|dificultad para respirar|no puede respirar)", "valor": "disnea"}
-        ],
-        "ausente": []
-    },
-    "sudoracion": {
-        "presente": [
-            {"regex": r"(sudoraci[oó]n|sudor fr[ií]o|sudoraci[oó]n profusa|empapado en sudor|está sudando)", "valor": "sudoracion"}
-        ],
-        "ausente": []
-    },
-    "vomitos": {
-        "presente": [
-            {"regex": r"(v[oó]mitos?|n[aá]useas?|g[aá]strico|reflujo)", "valor": "vomitos"}
-        ],
-        "ausente": []
-    },
-    "palpitaciones": {
-        "presente": [
-            {"regex": r"(palpitaciones|latidos|latido acelerado|sensaci[oó]n de latido)", "valor": "palpitaciones"}
-        ],
-        "ausente": []
-    },
-    "irradiacion": {
-        "presente": [
-            {"regex": r"(brazo)", "valor": "brazo"},
-            {"regex": r"(mand[ií]bula)", "valor": "mandíbula"},
-            {"regex": r"(cuello)", "valor": "cuello"},
-            {"regex": r"(espalda|hombro)", "valor": "espalda"}
-        ],
-        "ausente": []
-    },
-    "duracion": {
-        "presente": [
-            {"regex": r"(\d+\s*(min|minutos|h|horas))", "valor": "duracion_detectada"}
-        ],
-        "ausente": []
-    }
+"tipo_dolor": {
+    "presente": [
+        {"regex": r"(quemante|ardor|urente)", "valor": "ardor"},
+        {"regex": r"(opresivo|presivo|pesado|compresivo)", "valor": "opresivo"},
+        {"regex": r"(punzante|lancinante|lacerante)", "valor": "punzante"},
+        {"regex": r"(a )?punta de dedo", "valor": "punta dedo"},
+        {"regex": r"(sordo)", "valor": "sordo"}
+    ],
+    "ausente": []
+},
+"localizacion_dolor": {
+    "presente": [
+        {"regex": r"(precordial|centrotor[áa]cico|centro del tor[áa]x)", "valor": "precordial"},
+        {"regex": r"(tor[áa]cico|t[oó]rax|pecho|zona tor[áa]cica|regi[oó]n tor[áa]cica)", "valor": "torácico"},
+        {"regex": r"(dolor|molestia).*?(tor[áa]cico|pecho|t[oó]rax)", "valor": "torácico"}  # nuevo regex más clínico
+    ],
+    "ausente": []
+},
+"alivio_con_reposo": {
+    "presente": [
+        {"regex": r"(mejora)", "valor": "mejora"},
+        {"regex": r"(cede|remite|desaparece)", "valor": "cede"}
+    ],
+    "ausente": []
+},
+"similitud_dolor_previo_isquemico": {
+    "presente": [
+        {"regex": r"(similar|parecido|comparable|recordando|recuerda|ya conocido).*?(infarto|IAM|isquemia|dolor previo|dolor anterior|problema cardiaco)", "valor": "similar a isquémico previo"}
+    ],
+    "ausente": []
+},
+"inicio_dolor": {
+    "presente": [
+        {"regex": r"(s[uú]bito|brusco)", "valor": "súbito"},
+        {"regex": r"(gradual|lento)", "valor": "gradual"}
+    ],
+    "ausente": []
+},
+"disnea": {
+    "presente": [
+        {"regex": r"(disnea|falta de aire|ahogo|asfixia|dificultad respiratoria|dificultad para respirar|no puede respirar)", "valor": "disnea"}
+    ],
+    "ausente": []
+},
+"sudoracion": {
+    "presente": [
+        {"regex": r"(sudoraci[oó]n|sudor fr[ií]o|sudoraci[oó]n profusa|empapado en sudor|está sudando)", "valor": "sudoracion"}
+    ],
+    "ausente": []
+},
+"vomitos": {
+    "presente": [
+        {"regex": r"(v[oó]mitos?|n[aá]useas?|g[aá]strico|reflujo)", "valor": "vomitos"}
+    ],
+    "ausente": []
+},
+"palpitaciones": {
+    "presente": [
+        {"regex": r"(palpitaciones|latidos|latido acelerado|sensaci[oó]n de latido)", "valor": "palpitaciones"}
+    ],
+    "ausente": []
+},
+"irradiacion": {
+    "presente": [
+        {"regex": r"(brazo)", "valor": "brazo"},
+        {"regex": r"(mand[ií]bula)", "valor": "mandíbula"},
+        {"regex": r"(cuello)", "valor": "cuello"},
+        {"regex": r"(espalda|hombro)", "valor": "espalda"}
+    ],
+    "ausente": []
+},
+"duracion": {
+    "presente": [
+        {"regex": r"(\\d+\\s*(min|minutos|h|horas))", "valor": "duracion_detectada"}
+    ],
+    "ausente": []
 }
 
 def enriquecer_anamnesis(texto):
