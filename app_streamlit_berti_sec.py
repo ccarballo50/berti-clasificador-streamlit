@@ -4,65 +4,77 @@ import os
 import base64
 from enriquecedor_clinico import enriquecer_anamnesis, score_tipicidad, clasificacion_angina
 
-st.set_page_config(page_title="Clasificación de Angina - BERTI SEC", layout="centered")
-st.title("🩺 Clasificación clínica de angina según la SEC")
 
-st.markdown("""
-Esta app analiza anamnesis clínicas, calcula el score de tipicidad y clasificación SEC,
-y además te permite acumular múltiples casos en sesión y exportarlos todos a Excel al final.
-""")
+st.set_page_config(page_title="BERTI - Clasificador SEC", layout="wide")
+st.title("🩺 Clasificador Clínico BERTI - Angina Típica / Atípica")
 
-# Inicializar lista acumulativa
-if "casos_acumulados" not in st.session_state:
-    st.session_state.casos_acumulados = []
+# Inicializar lista acumulativa en sesión si no existe
+if "casos_analizados" not in st.session_state:
+    st.session_state.casos_analizados = []
 
-# Entrada del texto clínico
-texto_input = st.text_area("Introduce la anamnesis clínica del paciente:", height=200)
+texto_input = st.text_area("✍ Introduce aquí la anamnesis clínica del paciente:", height=200)
 
-if st.button("🔍 Analizar y guardar este caso"):
-    if texto_input.strip() == "":
-        st.warning("Por favor, introduce una anamnesis.")
-    else:
+if st.button("🔍 Analizar anamnesis"):
+    if texto_input.strip() != "":
         enriquecido, resumen = enriquecer_anamnesis(texto_input)
         score = score_tipicidad(resumen)
-        tipo = clasificacion_angina(score)
+        clasificacion = clasificacion_angina(score)
 
-        st.subheader("✅ Resultado del análisis clínico")
-        st.markdown(f"**Texto enriquecido:**\n\n```{enriquecido}```")
-        st.markdown(f"**Score de tipicidad clínica:** `{score}`")
-        st.markdown(f"**Clasificación SEC:** `Angina {tipo.upper()}`")
+        st.markdown("### ✅ Resultado del análisis clínico")
+        st.markdown("**Texto enriquecido:**")
+        st.code(enriquecido, language="markdown")
 
-        st.subheader("🧠 Variables clínicas detectadas")
+        st.markdown("**Score de tipicidad clínica:**")
+        st.write(score)
+
+        st.markdown("**Clasificación SEC:**")
+        st.write(clasificacion)
+
+        st.markdown("### 🧠 Variables clínicas detectadas")
         for var, val in resumen.items():
             st.markdown(f"- **{var}**: `{val}`")
 
-        # Guardar directamente el caso en la lista
-        fila = {
+        # BLOQUE: Preguntas asistidas por BERTI si hay datos ausentes relevantes
+        preguntas_clave = {
+            "tipo_dolor": "¿Cómo describiría el tipo de dolor? ¿Opresivo, quemante, punzante…?",
+            "localizacion_dolor": "¿Dónde se localiza el dolor? ¿Precordial, retroesternal, torácico…?",
+            "inicio_dolor": "¿Fue un inicio súbito o gradual?",
+            "irradiacion": "¿Irradia el dolor a brazo, cuello o mandíbula?",
+            "alivio_con_reposo": "¿El dolor mejora con el reposo?",
+            "similitud_dolor_previo_isquemico": "¿Se parece a algún dolor previo como un IAM o problema cardíaco anterior?",
+            "duracion": "¿Cuál fue la duración del episodio (minutos, horas, segundos)?",
+            "disnea": "¿Presentaba disnea o dificultad respiratoria?",
+            "sudoracion": "¿Hubo sudoración acompañante?",
+            "vomitos": "¿Aparecieron náuseas o vómitos?",
+            "palpitaciones": "¿Se acompañaba de palpitaciones?"
+        }
+
+        faltan_datos = [var for var, valor in resumen.items() if valor == "no mencionado" and var in preguntas_clave]
+
+        if faltan_datos:
+            st.markdown("### ❓ Preguntas asistidas por BERTI para completar diagnóstico")
+            st.info("Para emitir un diagnóstico más preciso, BERTI sugiere preguntar al médico clínico:")
+            for var in faltan_datos:
+                st.write(f"➡️ {preguntas_clave[var]}")
+
+        # Guardar caso en sesión
+        st.session_state.casos_analizados.append({
             "anamnesis": texto_input,
             "texto_enriquecido": enriquecido,
-            "score": score,
-            "clasificacion_sec": tipo
-        }
-        fila.update(resumen)
-        st.session_state.casos_acumulados.append(fila)
+            "clasificacion_sec": clasificacion
+        })
         st.success("✅ Caso guardado correctamente en la sesión.")
 
-# Mostrar todos los casos acumulados
-st.markdown("---")
-st.subheader("📊 Casos acumulados en esta sesión")
+# Mostrar los casos acumulados
+if len(st.session_state.casos_analizados) > 0:
+    st.markdown("### 📊 Casos acumulados en esta sesión")
+    df_casos = pd.DataFrame(st.session_state.casos_analizados)
+    st.dataframe(df_casos)
 
-if len(st.session_state.casos_acumulados) > 0:
-    df = pd.DataFrame(st.session_state.casos_acumulados)
-    st.dataframe(df)
-
-    if st.button("📥 Exportar Excel de todos los casos acumulados"):
-        nombre_archivo = "feedback_berti_acumulado.xlsx"
-        df.to_excel(nombre_archivo, index=False, engine='openpyxl')
-
-        with open(nombre_archivo, "rb") as f:
-            data = f.read()
-        b64 = base64.b64encode(data).decode()
-        href = f'<a href="data:application/octet-stream;base64,{b64}" download="{nombre_archivo}">📥 Descargar Excel</a>'
-        st.markdown(href, unsafe_allow_html=True)
+    # Botón para exportar
+    if st.button("⬇️ Exportar todos los casos a Excel"):
+        df_casos.to_excel("casos_enriquecidos_BERTI.xlsx", index=False)
+        st.success("✅ Archivo 'casos_enriquecidos_BERTI.xlsx' generado. Puedes descargarlo desde el entorno de ejecución.")
 else:
+    st.markdown("### 📊 Casos acumulados en esta sesión")
     st.info("Aún no hay casos acumulados. Analiza primero una anamnesis.")
