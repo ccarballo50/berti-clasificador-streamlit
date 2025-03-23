@@ -95,24 +95,37 @@ variables = {
 }
 }
 def enriquecer_anamnesis(texto):
-    resumen = {}
+    texto = texto.lower()
     texto_enriquecido = texto
+    resumen = {}
 
     for variable, patrones in variables.items():
-        valor_detectado = None
+        valor_detectado = "no mencionado"
+        encontrado = False
 
-        for patron in patrones["presente"]:
-            patron_regex = patron.get("regex", "")
-            valor = patron.get("valor", "")
+        # Primero buscamos en los patrones "presente"
+        for patron in patrones.get("presente", []):
+            if isinstance(patron, dict):  # Estructura {"regex": ..., "valor": ...}
+                if re.search(patron["regex"], texto, re.IGNORECASE):
+                    valor_detectado = patron["valor"]
+                    encontrado = True
+                    break
+            else:  # Estructura clásica con lista simple de regex
+                if re.search(patron, texto, re.IGNORECASE):
+                    valor_detectado = "presente"
+                    encontrado = True
+                    break
 
-            if re.search(patron_regex, texto, flags=re.IGNORECASE):
-                valor_detectado = valor
-                resumen[variable] = valor_detectado
-                texto_enriquecido += f" [{variable}: {valor_detectado}]"
-                break
+        # Solo si no se encontró ningún patrón presente, buscamos en los de "ausente"
+        if not encontrado:
+            for patron in patrones.get("ausente", []):
+                if re.search(patron, texto, re.IGNORECASE):
+                    valor_detectado = "ausente"
+                    encontrado = True
+                    break
 
-        if not valor_detectado:
-            resumen[variable] = "no mencionado"
+        resumen[variable] = valor_detectado
+        texto_enriquecido += f" [{variable}: {valor_detectado}]"
 
     return texto_enriquecido, resumen
 
