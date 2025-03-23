@@ -1,23 +1,27 @@
 import streamlit as st
 import pandas as pd
 import os
-import base64
 from enriquecedor_clinico import enriquecer_anamnesis, score_tipicidad, clasificacion_angina
 
-
+# Configuración inicial
 st.set_page_config(page_title="BERTI - Clasificador clínico", layout="wide")
 st.title("🩺 Clasificación clínica asistida - BERTI")
 
+# Mensaje informativo
 st.markdown("""
 Para la clasificación de riesgo de este paciente, se considera que las enzimas han sido normales, y que no hay alteración electrocardiográfica sugerente de isquemia aguda.
 """)
 
+# Estado de sesión
 if "casos_acumulados" not in st.session_state:
     st.session_state["casos_acumulados"] = []
 if "respuestas_berti" not in st.session_state:
     st.session_state["respuestas_berti"] = {}
 
+# Entrada de texto
 texto_input = st.text_area("Introduce la anamnesis clínica:")
+
+# Análisis al pulsar botón
 if st.button("🔍 Analizar anamnesis"):
     enriquecido, resumen = enriquecer_anamnesis(texto_input)
     score = score_tipicidad(resumen)
@@ -32,6 +36,7 @@ if st.button("🔍 Analizar anamnesis"):
     for var, val in resumen.items():
         st.markdown(f"- **{var}**: `{val}`")
 
+    # Guardar en memoria
     caso = {
         "anamnesis": texto_input,
         "texto_enriquecido": enriquecido,
@@ -39,26 +44,26 @@ if st.button("🔍 Analizar anamnesis"):
     }
     st.session_state.casos_acumulados.append(caso)
 
-# Mostrar preguntas asistidas después del análisis completo
+# Preguntas asistidas solo si hay casos acumulados
 if st.session_state.get("casos_acumulados"):
-    st.markdown("""
----
-## ❓ Preguntas asistidas por BERTI para completar diagnóstico
-""")
+    st.markdown("---")
+    st.markdown("## ❓ Preguntas asistidas por BERTI para completar diagnóstico")
+
+    # Mostrar formulario con preguntas si faltan variables
     resumen_actual = enriquecer_anamnesis(texto_input)[1] if texto_input else {}
     preguntas = {
-            "tipo_dolor": "¿Cuál es el tipo de dolor (opresivo, ardor, punzante...)?",
-            "localizacion_dolor": "¿Dónde se localiza el dolor (torácico, retroesternal, precordial...)?",
-            "similitud_dolor_previo_isquemico": "¿Se parece a algún dolor previo como un IAM o problema cardíaco anterior?",
-            "alivio_con_reposo": "¿El dolor mejora con el reposo?",
-            "disnea": "¿Presenta disnea o dificultad respiratoria?",
-            "sudoracion": "¿Hubo cortejo vegetativo (náuseas, vómitos o sudoración)?",
-            "vomitos": "¿Hubo cortejo vegetativo (náuseas, vómitos o sudoración)?",
-            "palpitaciones": "¿Ha tenido palpitaciones?",
-            "irradiacion": "¿Irradia el dolor hacia brazo, cuello, mandíbula...?",
-            "duracion": "¿Cuál fue la duración del episodio (minutos, horas, segundos)?",
-            "factores_riesgo": "¿Presenta factores de riesgo cardiovascular relevantes (HTA, DM, dislipemia, tabaquismo)?"
-        }
+        "tipo_dolor": "¿Cuál es el tipo de dolor (opresivo, ardor, punzante...)?",
+        "localizacion_dolor": "¿Dónde se localiza el dolor (torácico, retroesternal, precordial...)?",
+        "similitud_dolor_previo_isquemico": "¿Se parece a algún dolor previo como un IAM o problema cardíaco anterior?",
+        "alivio_con_reposo": "¿El dolor mejora con el reposo?",
+        "disnea": "¿Presenta disnea o dificultad respiratoria?",
+        "sudoracion": "¿Hubo cortejo vegetativo (náuseas, vómitos o sudoración)?",
+        "palpitaciones": "¿Ha tenido palpitaciones?",
+        "irradiacion": "¿Irradia el dolor hacia brazo, cuello, mandíbula...?",
+        "duracion": "¿Cuál fue la duración del episodio (minutos, horas, segundos)?",
+        "factores_riesgo": "¿Presenta factores de riesgo cardiovascular relevantes (HTA, DM, dislipemia, tabaquismo)?"
+    }
+
     respuestas_berti = st.session_state.respuestas_berti
 
     with st.form("formulario_berti"):
@@ -76,8 +81,20 @@ if st.session_state.get("casos_acumulados"):
 
         st.success("Resultado BERTI generado correctamente. Puedes exportar los casos acumulados.")
 
-        if st.button("📤 Exportar todos los casos a Excel"):
-            df = pd.DataFrame(st.session_state.casos_acumulados)
-            df.to_excel("output_berti_excel.xlsx", index=False)
-            st.success("Archivo 'output_berti_excel.xlsx' exportado correctamente")
+        # Guardado automático del Excel acumulado
+        nombre_excel = "casos_berti_acumulados.xlsx"
+        ruta_excel = os.path.join("/mnt/data", nombre_excel)
 
+        df_acumulado = pd.DataFrame(st.session_state.casos_acumulados)
+        df_acumulado.to_excel(ruta_excel, index=False)
+
+        st.success(f"✅ Casos acumulados guardados en `{nombre_excel}`")
+
+        # Botón de descarga
+        with open(ruta_excel, "rb") as f:
+            st.download_button(
+                label="📥 Descargar Excel acumulado",
+                data=f,
+                file_name=nombre_excel,
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
