@@ -114,6 +114,7 @@ def enriquecer_anamnesis(texto):
                     valor_detectado = patron["valor"] if patron["valor"] is not None else match.group(1)
                     valor_detectado = valor_detectado.strip().lower()
                     encontrado = True
+                    print(f">>> Match en {variable}: {patron['regex']}")
                     break
             else:  # Estructura clásica con lista simple de regex
                 if re.search(patron, texto, re.IGNORECASE):
