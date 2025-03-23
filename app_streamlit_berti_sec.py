@@ -49,19 +49,23 @@ if st.button("🔍 Analizar anamnesis"):
             "palpitaciones": "¿Se acompañaba de palpitaciones?"
         }
 
+        respuestas_usuario = {}
         faltan_datos = [var for var, valor in resumen.items() if valor == "no mencionado" and var in preguntas_clave]
 
         if faltan_datos:
             st.markdown("### ❓ Preguntas asistidas por BERTI para completar diagnóstico")
-            st.info("Para emitir un diagnóstico más preciso, BERTI sugiere preguntar al médico clínico:")
-            for var in faltan_datos:
-                st.write(f"➡️ {preguntas_clave[var]}")
+            st.info("Para emitir un diagnóstico más preciso, BERTI sugiere preguntar al médico clínico. Por favor, responde SI / NO / NO LO SABE")
 
-        # Guardar caso en sesión
+            for var in faltan_datos:
+                respuesta = st.selectbox(f"➡️ {preguntas_clave[var]}", ["NO RESPONDE", "SI", "NO", "NO LO SABE"], key=var)
+                respuestas_usuario[var] = respuesta
+
+        # Guardar caso en sesión con respuestas
         st.session_state.casos_analizados.append({
             "anamnesis": texto_input,
             "texto_enriquecido": enriquecido,
-            "clasificacion_sec": clasificacion
+            "clasificacion_sec": clasificacion,
+            "respuestas_berti": respuestas_usuario
         })
         st.success("✅ Caso guardado correctamente en la sesión.")
 
@@ -70,6 +74,14 @@ if len(st.session_state.casos_analizados) > 0:
     st.markdown("### 📊 Casos acumulados en esta sesión")
     df_casos = pd.DataFrame(st.session_state.casos_analizados)
     st.dataframe(df_casos)
+
+    if st.button("⬇️ Exportar todos los casos a Excel"):
+        df_casos.to_excel("casos_enriquecidos_BERTI.xlsx", index=False)
+        st.success("✅ Archivo 'casos_enriquecidos_BERTI.xlsx' generado. Puedes descargarlo desde el entorno de ejecución.")
+else:
+    st.markdown("### 📊 Casos acumulados en esta sesión")
+    st.info("Aún no hay casos acumulados. Analiza primero una anamnesis.")
+
 
     # Botón para exportar
     if st.button("⬇️ Exportar todos los casos a Excel"):
