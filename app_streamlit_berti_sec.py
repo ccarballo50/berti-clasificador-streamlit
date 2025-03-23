@@ -1,62 +1,60 @@
 import streamlit as st
 import pandas as pd
 import os
+import base64
 from enriquecedor_clinico import enriquecer_anamnesis, score_tipicidad, clasificacion_angina
 
 st.set_page_config(page_title="Clasificación de Angina - BERTI SEC", layout="centered")
-st.title("🩺 Clasificación clínica de angina según la SEC")
+st.title("🩺 Clasificación clínica de angina - Modo acumulativo")
 
 st.markdown("""
-Esta app utiliza lógica clínica programable para analizar anamnesis y clasificar el tipo de angina según los criterios de la Sociedad Española de Cardiología (SEC).
+Esta app permite analizar múltiples anamnesis clínicas, revisar los resultados y exportar todos los casos en bloque a un Excel.
 """)
 
-texto_input = st.text_area("Introduce la anamnesis clínica del paciente:", height=200)
+# Inicializar lista acumulativa en la sesión
+if "casos_acumulados" not in st.session_state:
+    st.session_state.casos_acumulados = []
 
-if st.button("Analizar anamnesis"):
+# Entrada de nueva anamnesis
+texto_input = st.text_area("Introduce una anamnesis clínica:", height=200)
+
+if st.button("➕ Añadir caso a la sesión"):
     if texto_input.strip() == "":
-        st.warning("Por favor, introduce una anamnesis.")
+        st.warning("Por favor, escribe una anamnesis.")
     else:
         enriquecido, resumen = enriquecer_anamnesis(texto_input)
         score = score_tipicidad(resumen)
         tipo = clasificacion_angina(score)
 
-        st.subheader("✅ Resultado del análisis clínico")
-        st.markdown(f"**Texto enriquecido:**\n\n```{enriquecido}```")
-        st.markdown(f"**Score de tipicidad clínica:** `{score}`")
-        st.markdown(f"**Clasificación SEC:** `Angina {tipo.upper()}`")
+        fila = {
+            "anamnesis": texto_input,
+            "texto_enriquecido": enriquecido,
+            "score": score,
+            "clasificacion_sec": tipo
+        }
+        fila.update(resumen)
 
-        st.markdown("---")
-        st.subheader("🧠 Variables clínicas detectadas (valores extraídos)")
-        for var, val in resumen.items():
-            st.markdown(f"- **{var}**: `{val}`")
+        st.session_state.casos_acumulados.append(fila)
+        st.success("✅ Caso añadido correctamente a la sesión.")
+        st.markdown("Puedes seguir introduciendo más anamnesis o exportar todo al final.")
 
-        st.markdown("---")
-        st.markdown("### 🧪 Debug del resumen (valores completos capturados)")
-        st.code(resumen, language='json')
+# Mostrar tabla acumulada
+st.markdown("---")
+st.subheader("📊 Casos acumulados en esta sesión")
 
-        # 🔽 NUEVA FUNCIÓN: Guardar en Excel
-        st.markdown("---")
-        st.subheader("💾 Guardar resultado para análisis posterior")
+if len(st.session_state.casos_acumulados) > 0:
+    df = pd.DataFrame(st.session_state.casos_acumulados)
+    st.dataframe(df)
 
-        if st.button("Guardar este caso en Excel"):
-            fila = {
-                "anamnesis": texto_input,
-                "texto_enriquecido": enriquecido,
-                "score": score,
-                "clasificacion_sec": tipo
-            }
-            for var, val in resumen.items():
-                fila[var] = val
+    # Exportar Excel
+    nombre_archivo = "feedback_berti_sesion.xlsx"
+    df.to_excel(nombre_archivo, index=False)
 
-            df_nuevo = pd.DataFrame([fila])
-            nombre_archivo = "feedback_berti.xlsx"
-
-            if os.path.exists(nombre_archivo):
-                df_existente = pd.read_excel(nombre_archivo)
-                df_final = pd.concat([df_existente, df_nuevo], ignore_index=True)
-            else:
-                df_final = df_nuevo
-
-            df_final.to_excel(nombre_archivo, index=False)
-            st.success(f"Caso guardado correctamente en '{nombre_archivo}'")
-
+    # Botón de descarga
+    with open(nombre_archivo, "rb") as f:
+        data = f.read()
+    b64 = base64.b64encode(data).decode()
+    href = f'<a href="data:application/octet-stream;base64,{b64}" download="{nombre_archivo}">📥 Descargar Excel de esta sesión</a>'
+    st.markdown(href, unsafe_allow_html=True)
+else:
+    st.info("Aún no se ha añadido ningún caso en esta sesión.")
