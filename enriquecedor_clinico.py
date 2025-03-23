@@ -96,6 +96,8 @@ variables = {
     "ausente": []
 }
 }
+import re
+
 def enriquecer_anamnesis(texto):
     texto = texto.lower()
     texto_enriquecido = texto
@@ -106,34 +108,43 @@ def enriquecer_anamnesis(texto):
         encontrado = False
 
         # Primero buscamos en los patrones "presente"
-    for patron in patrones.get("presente", []):
-        if isinstance(patron, dict):  # Estructura {"regex": ..., "valor": ...}
-            match = re.search(patron["regex"], texto, re.IGNORECASE)
-            if match:
-                valor_detectado = patron["valor"] if patron["valor"] is not None else match.group(1)
-                valor_detectado = valor_detectado.strip().lower()
-                encontrado = True
-                break
-        else:  # Estructura clásica con lista simple de regex
-            if re.search(patron, texto, re.IGNORECASE):
-                valor_detectado = "presente"
-                valor_detectado = valor_detectado.strip().lower()
-                encontrado = True
-                break
-
+        for patron in patrones.get("presente", []):
+            if isinstance(patron, dict):  # Estructura {"regex": ..., "valor": ...}
+                match = re.search(patron["regex"], texto, re.IGNORECASE)
+                if match:
+                    valor_detectado = patron["valor"] if patron["valor"] is not None else match.group(1)
+                    valor_detectado = valor_detectado.strip().lower()
+                    encontrado = True
+                    break
+            else:  # Estructura clásica con lista simple de regex
+                if re.search(patron, texto, re.IGNORECASE):
+                    valor_detectado = "presente"
+                    valor_detectado = valor_detectado.strip().lower()
+                    encontrado = True
+                    break
 
         # Solo si no se encontró ningún patrón presente, buscamos en los de "ausente"
         if not encontrado:
             for patron in patrones.get("ausente", []):
-                if re.search(patron, texto, re.IGNORECASE):
-                    valor_detectado = "ausente"
-                    encontrado = True
-                    break
+                if isinstance(patron, dict):
+                    match = re.search(patron["regex"], texto, re.IGNORECASE)
+                    if match:
+                        valor_detectado = patron["valor"] if patron["valor"] is not None else match.group(1)
+                        valor_detectado = valor_detectado.strip().lower()
+                        encontrado = True
+                        break
+                else:
+                    if re.search(patron, texto, re.IGNORECASE):
+                        valor_detectado = "ausente"
+                        valor_detectado = valor_detectado.strip().lower()
+                        encontrado = True
+                        break
 
         resumen[variable] = valor_detectado
         texto_enriquecido += f" [{variable}: {valor_detectado}]"
 
     return texto_enriquecido, resumen
+
 
 def score_tipicidad(resumen):
     pesos = {
