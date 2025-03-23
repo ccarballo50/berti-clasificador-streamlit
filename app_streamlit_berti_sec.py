@@ -84,9 +84,9 @@ else:
 
 
     # Botón para exportar
-    if st.button("⬇️ Exportar todos los casos a Excel"):
-        df_casos.to_excel("casos_enriquecidos_BERTI.xlsx", index=False)
-        st.success("✅ Archivo 'casos_enriquecidos_BERTI.xlsx' generado. Puedes descargarlo desde el entorno de ejecución.")
+if st.button("⬇️ Exportar todos los casos a Excel"):
+    df_casos.to_excel("casos_enriquecidos_BERTI.xlsx", index=False)
+    st.success("✅ Archivo 'casos_enriquecidos_BERTI.xlsx' generado. Puedes descargarlo desde el entorno de ejecución.")
 else:
     st.markdown("### 📊 Casos acumulados en esta sesión")
     st.info("Aún no hay casos acumulados. Analiza primero una anamnesis.")
