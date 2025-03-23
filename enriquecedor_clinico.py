@@ -34,7 +34,7 @@ variables = {
         {"regex": r"(dolor).*(ya ha tenido|tuvo previamente|sufrió antes|conocido previamente|cardiaco previo)", "valor": "similar a isquémico previo"}
     ],
     "ausente": []
-}
+},
 "inicio_dolor": {
     "presente": [
         {"regex": r"(s[uú]bito|brusco)", "valor": "súbito"},
