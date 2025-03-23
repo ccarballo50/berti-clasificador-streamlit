@@ -96,9 +96,8 @@ variables = {
         r"\d+\s*(minutos|min|min\.|h|horas)\s*(de duración)?"
     ],
     "ausente": []
+},
 }
-}
-import re
 
 def enriquecer_anamnesis(texto):
     texto = texto.lower()
